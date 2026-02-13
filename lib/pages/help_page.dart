@@ -35,16 +35,44 @@ class HelpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const steps = [
+      _StepItem(
+        icon: Icons.key_rounded,
+        title: 'Configure Token',
+        description: 'Open Settings and add your GitHub Personal Access Token with scopes: repo, admin:org.',
+      ),
+      _StepItem(
+        icon: Icons.badge_rounded,
+        title: 'Save Team Usernames',
+        description: 'Use Predefined Usernames so forms can auto-suggest collaborators and reduce typos.',
+      ),
+      _StepItem(
+        icon: Icons.add_box_rounded,
+        title: 'Create Repository',
+        description: 'Set org/owner + repo name. You can optionally add a collaborator and choose a role.',
+      ),
+      _StepItem(
+        icon: Icons.people_rounded,
+        title: 'Manage Repo Users',
+        description: 'Verify an existing repo, review collaborators, and update/add users with the right role.',
+      ),
+      _StepItem(
+        icon: Icons.delete_sweep_rounded,
+        title: 'Remove User from Org Repos',
+        description: 'Run bulk removal for a username across repositories. Best for offboarding workflows.',
+      ),
+    ];
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 820),
+        constraints: const BoxConstraints(maxWidth: 900),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             PageHeader(
               title: 'How to Use',
-              subtitle: 'Step-by-step guide to using the GitHub Admin Panel.',
+              subtitle: 'A practical guide to safely manage repositories and collaborators.',
               trailing: PrimaryButton(
                 label: 'View Scripts',
                 icon: Icons.download_rounded,
@@ -52,74 +80,120 @@ class HelpPage extends StatelessWidget {
               ),
             ),
 
-            // Platform info
             StyledCard(
-              backgroundColor: AppColors.primary.withOpacity(0.05),
-              borderColor: AppColors.primary.withOpacity(0.2),
-              child: Row(children: [
-                const Icon(Icons.language_rounded, size: 20, color: AppColors.primaryLight),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
+              backgroundColor: AppColors.primary.withOpacity(0.08),
+              borderColor: AppColors.primary.withOpacity(0.32),
+              child: Column(
+                children: [
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'HTTP Mode — Direct API',
-                        style: TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.rocket_launch_rounded, color: AppColors.primaryLight),
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'This app calls the GitHub REST API directly from the browser. You can also download bundled shell scripts from this page.',
-                        style: TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.5),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'HTTP Mode — Direct GitHub API',
+                              style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              'Use this panel for fast, centralized admin operations. Start with a token, then create repos, manage collaborators, and offboard users safely.',
+                              style: TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.5),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ]),
-            ),
-
-            _section('1. Configure Token', 'Go to Settings and enter your GitHub Personal Access Token.\n\nRequired scopes: repo, admin:org'),
-            _section('2. Add Team Members', 'Go to Predefined Usernames and add your team members\' GitHub usernames. These appear as dropdown suggestions in all forms.'),
-            _section('3. Create Repository', 'Enter the org/owner name and repo name. Owner defaults to "$defaultOwner" if empty. Optionally add a collaborator and select their role.'),
-            _section('4. Manage Repo Users', 'Enter org and repo, click "Check Repo" to verify. See all collaborators with role dropdowns. Change roles inline or add new collaborators.'),
-            _section('5. Remove User from All Repos', 'Enter org and username. Iterates through every org repo. Use with caution on large orgs.'),
-
-            StyledCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Available Roles', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
                   const SizedBox(height: 14),
-                  _roleRow('Read (pull)', 'Can view and clone the repository'),
-                  _roleRow('Triage', 'Can manage issues and pull requests'),
-                  _roleRow('Write (push)', 'Can push to the repository'),
-                  _roleRow('Maintain', 'Can manage without admin access'),
-                  _roleRow('Admin', 'Full access to the repository'),
-                ],
-              ),
-            ),
-
-            StyledCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('API Rate Limits', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
-                  const SizedBox(height: 14),
-                  _rateRow('Unauthenticated', '60/hour'),
-                  _rateRow('Authenticated (PAT)', '5,000/hour'),
-                  _rateRow('Enterprise Cloud', '15,000/hour'),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: AppColors.success.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
-                    child: Row(children: const [
-                      Icon(Icons.info_outline_rounded, size: 14, color: AppColors.success),
-                      SizedBox(width: 8),
-                      Text('API calls are free. When limits are hit, requests are blocked until reset.', style: TextStyle(color: AppColors.success, fontSize: 12)),
-                    ]),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: const [
+                      _InfoChip(icon: Icons.verified_user_rounded, text: 'PAT Required'),
+                      _InfoChip(icon: Icons.speed_rounded, text: '5,000 req/hour'),
+                      _InfoChip(icon: Icons.shield_rounded, text: 'Role-based access'),
+                      _InfoChip(icon: Icons.download_rounded, text: 'Scripts available'),
+                    ],
                   ),
                 ],
               ),
+            ),
+
+            StyledCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Step-by-Step Workflow', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                  const SizedBox(height: 14),
+                  ...List.generate(
+                    steps.length,
+                    (i) => _stepCard(index: i + 1, item: steps[i]),
+                  ),
+                ],
+              ),
+            ),
+
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: StyledCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Available Roles', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
+                        const SizedBox(height: 12),
+                        _roleRow('Read (pull)', 'View and clone repositories'),
+                        _roleRow('Triage', 'Manage issues and PRs'),
+                        _roleRow('Write (push)', 'Push commits and collaborate'),
+                        _roleRow('Maintain', 'Manage most settings except admin'),
+                        _roleRow('Admin', 'Full repository control'),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: StyledCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Rate Limits & Safety', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
+                        const SizedBox(height: 12),
+                        _rateRow('Unauthenticated', '60/hour'),
+                        _rateRow('Authenticated (PAT)', '5,000/hour'),
+                        _rateRow('Enterprise Cloud', '15,000/hour'),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: AppColors.success.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                          child: Row(children: const [
+                            Icon(Icons.info_outline_rounded, size: 14, color: AppColors.success),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Bulk operations are powerful—double-check owner, repo, and username before running destructive actions.',
+                                style: TextStyle(color: AppColors.success, fontSize: 12, height: 1.45),
+                              ),
+                            ),
+                          ]),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -127,14 +201,40 @@ class HelpPage extends StatelessWidget {
     );
   }
 
-  Widget _section(String title, String content) => StyledCard(
-        margin: const EdgeInsets.only(bottom: 14),
-        child: Column(
+  Widget _stepCard({required int index, required _StepItem item}) => Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.inputBg.withOpacity(0.45),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.cardBorder.withOpacity(0.8)),
+        ),
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
-            const SizedBox(height: 8),
-            Text(content, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.7)),
+            Container(
+              width: 28,
+              height: 28,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.22),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Text('$index', style: const TextStyle(color: AppColors.primaryLight, fontSize: 12, fontWeight: FontWeight.w700)),
+            ),
+            const SizedBox(width: 10),
+            Icon(item.icon, size: 18, color: AppColors.textSecondary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.title, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Text(item.description, style: const TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.45)),
+                ],
+              ),
+            ),
           ],
         ),
       );
@@ -143,7 +243,7 @@ class HelpPage extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 8),
         child: Row(
           children: [
-            SizedBox(width: 130, child: Text(role, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w500))),
+            SizedBox(width: 120, child: Text(role, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600))),
             Expanded(child: Text(desc, style: const TextStyle(color: AppColors.textMuted, fontSize: 12))),
           ],
         ),
@@ -153,9 +253,44 @@ class HelpPage extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 6),
         child: Row(
           children: [
-            SizedBox(width: 180, child: Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12))),
+            SizedBox(width: 170, child: Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12))),
             Text(limit, style: GoogleFonts.jetBrainsMono(fontSize: 12, color: AppColors.primaryLight)),
           ],
         ),
       );
+}
+
+class _StepItem {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _StepItem({required this.icon, required this.title, required this.description});
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _InfoChip({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.inputBg.withOpacity(0.65),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.cardBorder.withOpacity(0.9)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: AppColors.primaryLight),
+          const SizedBox(width: 6),
+          Text(text, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
 }
