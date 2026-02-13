@@ -41,6 +41,7 @@ class _RemoveUserPageState extends State<RemoveUserPage> with LoggerMixin {
     setState(() => _loading = false);
   }
 
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
