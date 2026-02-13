@@ -2,55 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants.dart';
 import '../widgets/styled_widgets.dart';
-import '../platform/platform_selector.dart' as platform;
 
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
 
-  Future<void> _downloadScripts(BuildContext context) async {
-    final dir = await platform.getScriptsDir();
-    if (dir != null) {
-      showDialog(context: context, builder: (_) => AlertDialog(
-        backgroundColor: AppColors.card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Scripts Location', style: TextStyle(color: Colors.white, fontSize: 16)),
-        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Your scripts are located at:', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: AppColors.inputBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.cardBorder)),
-            child: SelectableText(dir, style: GoogleFonts.jetBrainsMono(fontSize: 12, color: AppColors.cyan)),
-          ),
-          const SizedBox(height: 14),
-          const Text('You can copy these scripts to your preferred location.',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
-        ]),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close', style: TextStyle(color: AppColors.primary))),
-        ],
-      ));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final showDownload = platform.canDownloadScripts;
-    final runsScripts = platform.isMacOS;
-
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
       child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 820), child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageHeader(
+          const PageHeader(
             title: 'How to Use',
             subtitle: 'Step-by-step guide to using the GitHub Admin Panel.',
-            trailing: showDownload ? PrimaryButton(
-              label: 'View Scripts',
-              icon: Icons.folder_open_rounded,
-              onPressed: () => _downloadScripts(context),
-            ) : null,
           ),
 
           // Platform info
@@ -58,16 +24,14 @@ class HelpPage extends StatelessWidget {
             backgroundColor: AppColors.primary.withOpacity(0.05),
             borderColor: AppColors.primary.withOpacity(0.2),
             child: Row(children: [
-              Icon(runsScripts ? Icons.terminal_rounded : Icons.language_rounded,
+              const Icon(Icons.language_rounded,
                 size: 20, color: AppColors.primaryLight),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(runsScripts ? 'Local Script Mode — Script Execution' : 'HTTP Mode — Direct API',
+                const Text('HTTP Mode — Direct API',
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
-                Text(runsScripts
-                  ? 'This app executes bundled shell scripts locally. No API calls are made directly from the app.'
-                  : 'This app calls the GitHub REST API directly. Download buttons provide script files for reference.',
+                const Text('This app calls the GitHub REST API directly from the browser. No local scripts are used.',
                   style: const TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.5)),
               ])),
             ]),

@@ -3,7 +3,6 @@ import '../constants.dart';
 import '../widgets/styled_widgets.dart';
 import '../widgets/log_panel.dart';
 import '../platform/github_backend.dart';
-import '../platform/platform_selector.dart' as platform;
 
 class CreateRepoPage extends StatefulWidget {
   final String token;
@@ -47,22 +46,6 @@ class _CreateRepoPageState extends State<CreateRepoPage> with LoggerMixin {
   }
 
 
-  Future<void> _downloadScript() async {
-    final filePath = await platform.downloadScript('github_create_repo.sh');
-    if (!mounted) return;
-
-    if (filePath != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Script downloaded to: $filePath')),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Could not download script on this platform.')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -70,7 +53,7 @@ class _CreateRepoPageState extends State<CreateRepoPage> with LoggerMixin {
       child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 820), child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageHeader(title: 'Create Repository', subtitle: 'Create a new GitHub repo and optionally invite a collaborator.', trailing: platform.canDownloadScripts ? PrimaryButton(label: 'Download Script', icon: Icons.download_rounded, compact: true, onPressed: _downloadScript) : null),
+          const PageHeader(title: 'Create Repository', subtitle: 'Create a new GitHub repo and optionally invite a collaborator.'),
 
           StyledCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [

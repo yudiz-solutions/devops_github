@@ -315,10 +315,10 @@ class PlatformBadge extends StatelessWidget {
         border: Border.all(color: isMac ? AppColors.accent.withOpacity(0.3) : AppColors.primary.withOpacity(0.3)),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(isMac ? Icons.terminal : Icons.language, size: 13, color: isMac ? AppColors.accent : AppColors.primaryLight),
+        const Icon(Icons.language, size: 13, color: AppColors.primaryLight),
         const SizedBox(width: 6),
-        Text(isMac ? 'Local · Scripts' : 'HTTP · API',
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isMac ? AppColors.accent : AppColors.primaryLight)),
+        Text('HTTP · API',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primaryLight)),
       ]),
     );
   }

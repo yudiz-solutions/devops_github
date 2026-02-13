@@ -3,7 +3,6 @@ import '../constants.dart';
 import '../widgets/styled_widgets.dart';
 import '../widgets/log_panel.dart';
 import '../platform/github_backend.dart';
-import '../platform/platform_selector.dart' as platform;
 
 class ManageUsersPage extends StatefulWidget {
   final String token;
@@ -73,22 +72,6 @@ class _ManageUsersPageState extends State<ManageUsersPage> with LoggerMixin {
   }
 
 
-  Future<void> _downloadScript() async {
-    final filePath = await platform.downloadScript('github_add_user_to_repo.sh');
-    if (!mounted) return;
-
-    if (filePath != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Script downloaded to: $filePath')),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Could not download script on this platform.')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -96,7 +79,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> with LoggerMixin {
       child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 820), child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageHeader(title: 'Manage Repo Users', subtitle: 'Add users or change roles on an existing repository.', trailing: platform.canDownloadScripts ? PrimaryButton(label: 'Download Script', icon: Icons.download_rounded, compact: true, onPressed: _downloadScript) : null),
+          const PageHeader(title: 'Manage Repo Users', subtitle: 'Add users or change roles on an existing repository.'),
 
           // Repo check
           StyledCard(child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [

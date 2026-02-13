@@ -1,5 +1,5 @@
 /// Platform abstraction for GitHub operations.
-/// Web: uses HTTP directly. macOS: executes shell scripts.
+/// Current app mode: web-style HTTP backend.
 
 typedef LogCallback = void Function(String message, {bool isError, bool isSuccess, bool isWarn});
 

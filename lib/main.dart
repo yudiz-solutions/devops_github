@@ -204,12 +204,12 @@ class _AdminShellState extends State<AdminShell> {
               child: Column(children: [
                 // Platform badge
                 Row(children: [
-                  Icon(platform.isMacOS ? Icons.terminal_rounded : Icons.language_rounded,
-                    size: 13, color: platform.isMacOS ? AppColors.accent : AppColors.primaryLight),
+                  const Icon(Icons.language_rounded,
+                    size: 13, color: AppColors.primaryLight),
                   const SizedBox(width: 8),
-                  Text(platform.isMacOS ? 'Local · Scripts' : 'HTTP · API',
+                  const Text('HTTP · API',
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500,
-                      color: platform.isMacOS ? AppColors.accent : AppColors.primaryLight)),
+                      color: AppColors.primaryLight)),
                 ]),
                 if (_tokenSaved) ...[
                   const SizedBox(height: 10),
