@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "yudiz-devops"
+  },
+  "targets": {
+    "yudiz-devops": {
+      "hosting": {
+        "autops": [
+          "autops"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
