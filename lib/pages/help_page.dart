@@ -35,7 +35,8 @@ class HelpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final showDownload = platform.isMacOS;
+    final showDownload = platform.canDownloadScripts;
+    final runsScripts = platform.isMacOS;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
@@ -57,16 +58,16 @@ class HelpPage extends StatelessWidget {
             backgroundColor: AppColors.primary.withOpacity(0.05),
             borderColor: AppColors.primary.withOpacity(0.2),
             child: Row(children: [
-              Icon(showDownload ? Icons.terminal_rounded : Icons.language_rounded,
+              Icon(runsScripts ? Icons.terminal_rounded : Icons.language_rounded,
                 size: 20, color: AppColors.primaryLight),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(showDownload ? 'macOS Mode — Script Execution' : 'Web Mode — Direct HTTP',
+                Text(runsScripts ? 'Local Script Mode — Script Execution' : 'HTTP Mode — Direct API',
                   style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
-                Text(showDownload
+                Text(runsScripts
                   ? 'This app executes bundled shell scripts locally. No API calls are made directly from the app.'
-                  : 'This app calls the GitHub REST API directly from your browser. No server or scripts needed.',
+                  : 'This app calls the GitHub REST API directly. Download buttons provide script files for reference.',
                   style: const TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.5)),
               ])),
             ]),

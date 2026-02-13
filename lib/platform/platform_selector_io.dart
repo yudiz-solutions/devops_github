@@ -1,7 +1,9 @@
 import 'dart:io' show Directory, File, Platform;
+
+import 'package:path_provider/path_provider.dart';
+
 import 'github_backend.dart';
 import 'macos_backend.dart';
-import 'package:path_provider/path_provider.dart';
 import 'web_backend.dart';
 
 GitHubBackend createBackend() {
@@ -13,17 +15,14 @@ GitHubBackend createBackend() {
 
 bool get isMacOS => Platform.isMacOS || Platform.isLinux;
 
+bool get canDownloadScripts => true;
+
 Future<String?> getScriptsDir() async {
-  if (isMacOS) {
-    final backend = MacOSGitHubBackend();
-    return backend.getScriptsPath();
-  }
-  return null;
+  final backend = MacOSGitHubBackend();
+  return backend.getScriptsPath();
 }
 
 Future<String?> downloadScript(String scriptName) async {
-  if (!isMacOS) return null;
-
   final backend = MacOSGitHubBackend();
   final scriptsPath = await backend.getScriptsPath();
   final source = File('$scriptsPath/$scriptName');

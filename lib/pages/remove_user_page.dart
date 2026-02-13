@@ -66,7 +66,7 @@ class _RemoveUserPageState extends State<RemoveUserPage> with LoggerMixin {
       child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 820), child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageHeader(title: 'Remove User from All Repos', subtitle: 'Remove a user as collaborator from every repository in an organisation.', trailing: platform.isMacOS ? PrimaryButton(label: 'Download Script', icon: Icons.download_rounded, compact: true, onPressed: _downloadScript) : null),
+          PageHeader(title: 'Remove User from All Repos', subtitle: 'Remove a user as collaborator from every repository in an organisation.', trailing: platform.canDownloadScripts ? PrimaryButton(label: 'Download Script', icon: Icons.download_rounded, compact: true, onPressed: _downloadScript) : null),
 
           // Warning
           StyledCard(

@@ -207,7 +207,7 @@ class _AdminShellState extends State<AdminShell> {
                   Icon(platform.isMacOS ? Icons.terminal_rounded : Icons.language_rounded,
                     size: 13, color: platform.isMacOS ? AppColors.accent : AppColors.primaryLight),
                   const SizedBox(width: 8),
-                  Text(platform.isMacOS ? 'macOS · Scripts' : 'Web · HTTP',
+                  Text(platform.isMacOS ? 'Local · Scripts' : 'HTTP · API',
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500,
                       color: platform.isMacOS ? AppColors.accent : AppColors.primaryLight)),
                 ]),

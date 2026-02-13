@@ -70,7 +70,7 @@ class _CreateRepoPageState extends State<CreateRepoPage> with LoggerMixin {
       child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 820), child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageHeader(title: 'Create Repository', subtitle: 'Create a new GitHub repo and optionally invite a collaborator.', trailing: platform.isMacOS ? PrimaryButton(label: 'Download Script', icon: Icons.download_rounded, compact: true, onPressed: _downloadScript) : null),
+          PageHeader(title: 'Create Repository', subtitle: 'Create a new GitHub repo and optionally invite a collaborator.', trailing: platform.canDownloadScripts ? PrimaryButton(label: 'Download Script', icon: Icons.download_rounded, compact: true, onPressed: _downloadScript) : null),
 
           StyledCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
