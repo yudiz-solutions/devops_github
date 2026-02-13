@@ -81,60 +81,10 @@ class HelpPage extends StatelessWidget {
             ),
 
             StyledCard(
-              backgroundColor: AppColors.primary.withOpacity(0.08),
-              borderColor: AppColors.primary.withOpacity(0.32),
-              child: Column(
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.rocket_launch_rounded, color: AppColors.primaryLight),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'HTTP Mode — Direct GitHub API',
-                              style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700),
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              'Use this panel for fast, centralized admin operations. Start with a token, then create repos, manage collaborators, and offboard users safely.',
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.5),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: const [
-                      _InfoChip(icon: Icons.verified_user_rounded, text: 'PAT Required'),
-                      _InfoChip(icon: Icons.speed_rounded, text: '5,000 req/hour'),
-                      _InfoChip(icon: Icons.shield_rounded, text: 'Role-based access'),
-                      _InfoChip(icon: Icons.download_rounded, text: 'Scripts available'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            StyledCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Step-by-Step Workflow', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                  const Text('Available scripts', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
                   const SizedBox(height: 14),
                   ...List.generate(
                     steps.length,
