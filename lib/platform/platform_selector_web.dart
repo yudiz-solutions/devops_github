@@ -6,3 +6,5 @@ GitHubBackend createBackend() => WebGitHubBackend();
 bool get isMacOS => false;
 
 Future<String?> getScriptsDir() async => null;
+
+Future<String?> downloadScript(String scriptName) async => null;
