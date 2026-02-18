@@ -32,7 +32,7 @@ main() {
   echo "[INFO] Owner '${owner}' is type: ${owner_type}"
 
   echo "[INFO] Creating repository '${repo_name}' under '${owner}'..."
-  local payload="{\"name\":\"${repo_name}\",\"private\":false,\"auto_init\":true}"
+  local payload="{\"name\":\"${repo_name}\",\"private\":true,\"auto_init\":true}"
   local endpoint="/user/repos"
   [[ "$owner_type" == "Organization" ]] && endpoint="/orgs/${owner}/repos"
 
