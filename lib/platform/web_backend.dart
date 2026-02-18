@@ -51,7 +51,7 @@ class WebGitHubBackend implements GitHubBackend {
     onLog?.call('Creating repository \'$repoName\' under \'$owner\'...');
     final res = await _call('POST', endpoint, token, body: {
       'name': repoName,
-      'private': false,
+      'private': true,
       'auto_init': true,
     });
 
