@@ -4,6 +4,7 @@ import 'github_backend.dart';
 
 class WebGitHubBackend implements GitHubBackend {
   static const _apiBase = 'https://api.github.com';
+  static const _jenkinsBase = 'https://jenkins.webdevprojects.cloud';
 
   Map<String, String> _headers(String token) => {
         'Accept': 'application/vnd.github+json',
@@ -32,6 +33,101 @@ class WebGitHubBackend implements GitHubBackend {
     }
   }
 
+  Map<String, String> _jenkinsAuthHeaders(String username, String token) => {
+        'Authorization': 'Basic ${base64Encode(utf8.encode('$username:$token'))}',
+      };
+
+  Future<String?> _jenkinsCrumb(String username, String token) async {
+    final uri = Uri.parse('$_jenkinsBase/crumbIssuer/api/json');
+    final res = await http.get(uri, headers: _jenkinsAuthHeaders(username, token));
+    if (res.statusCode != 200) return null;
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final field = data['crumbRequestField']?.toString();
+    final crumb = data['crumb']?.toString();
+    if (field == null || crumb == null) return null;
+    return '$field:$crumb';
+  }
+
+  String _escapeXml(String input) {
+    return input
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&apos;');
+  }
+
+  Future<GHResult> _createJenkinsItem({
+    required JenkinsConfig jenkins,
+    required String repoName,
+    required String repoUrl,
+    LogCallback? onLog,
+  }) async {
+    onLog?.call('Fetching Jenkins crumb...');
+    final crumbHeader = await _jenkinsCrumb(jenkins.username, jenkins.token);
+    if (crumbHeader == null) {
+      onLog?.call('Failed to get Jenkins crumb', isError: true);
+      return GHResult(success: false, message: 'Failed to get Jenkins crumb');
+    }
+
+    final parts = crumbHeader.split(':');
+    final itemName = (jenkins.itemName == null || jenkins.itemName!.trim().isEmpty)
+        ? repoName
+        : jenkins.itemName!.trim();
+    final branch = jenkins.branch.trim().isEmpty ? 'main' : jenkins.branch.trim();
+    final folder = jenkins.folderName.trim();
+
+    final jobUrl = Uri.parse(
+      '$_jenkinsBase/job/${Uri.encodeComponent(folder)}/createItem?name=${Uri.encodeQueryComponent(itemName)}',
+    );
+
+    final xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<flow-definition plugin="workflow-job">
+  <description>Pipeline for ${_escapeXml(repoName)}</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>${_escapeXml(repoUrl)}</url>
+          <credentialsId>github-pat-yudiz</credentialsId>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>*/${_escapeXml(branch)}</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+    </scm>
+    <scriptPath>Jenkinsfile</scriptPath>
+    <lightweight>true</lightweight>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>''';
+
+    onLog?.call('Creating Jenkins item "$itemName" in folder "$folder"...');
+    final res = await http.post(
+      jobUrl,
+      headers: {
+        ..._jenkinsAuthHeaders(jenkins.username, jenkins.token),
+        parts.first: parts.sublist(1).join(':'),
+        'Content-Type': 'application/xml',
+      },
+      body: xml,
+    );
+
+    if (res.statusCode == 200 || res.statusCode == 201 || res.statusCode == 302) {
+      onLog?.call('Jenkins item created successfully', isSuccess: true);
+      return GHResult(success: true);
+    }
+
+    onLog?.call('Failed to create Jenkins item: HTTP ${res.statusCode}', isError: true);
+    return GHResult(success: false, message: 'HTTP ${res.statusCode}');
+  }
+
   @override
   Future<GHResult> createRepo({
     required String token,
@@ -39,6 +135,7 @@ class WebGitHubBackend implements GitHubBackend {
     required String repoName,
     String? collaborator,
     String role = 'push',
+    JenkinsConfig? jenkins,
     LogCallback? onLog,
   }) async {
     onLog?.call('Checking owner type for \'$owner\'...');
@@ -75,7 +172,50 @@ class WebGitHubBackend implements GitHubBackend {
       }
     }
 
+    if (jenkins != null) {
+      final jenkinsResult = await _createJenkinsItem(
+        jenkins: jenkins,
+        repoName: repoName,
+        repoUrl: 'https://github.com/$owner/$repoName.git',
+        onLog: onLog,
+      );
+      if (!jenkinsResult.success) {
+        return GHResult(
+          success: false,
+          message: 'Repository created but Jenkins setup failed: ${jenkinsResult.message}',
+          data: {'url': repoUrl},
+        );
+      }
+    }
+
     return GHResult(success: true, message: repoUrl, data: {'url': repoUrl});
+  }
+
+  @override
+  Future<List<String>> getJenkinsFolders({
+    required String username,
+    required String token,
+    LogCallback? onLog,
+  }) async {
+    onLog?.call('Fetching Jenkins folders...');
+    final uri = Uri.parse('$_jenkinsBase/api/json?tree=jobs[name,_class]');
+    final res = await http.get(uri, headers: _jenkinsAuthHeaders(username, token));
+    if (res.statusCode != 200) {
+      onLog?.call('Failed to load Jenkins folders (HTTP ${res.statusCode})', isWarn: true);
+      return [];
+    }
+
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final jobs = (data['jobs'] as List?) ?? [];
+    final folders = jobs
+        .whereType<Map<String, dynamic>>()
+        .where((j) => (j['_class']?.toString() ?? '').toLowerCase().contains('folder'))
+        .map((j) => j['name']?.toString() ?? '')
+        .where((name) => name.isNotEmpty)
+        .toList();
+
+    onLog?.call('Loaded ${folders.length} Jenkins folder(s)', isSuccess: true);
+    return folders;
   }
 
   @override
