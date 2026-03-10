@@ -64,6 +64,8 @@ class AdminShell extends StatefulWidget {
 class _AdminShellState extends State<AdminShell> {
   NavPage _page = NavPage.settings;
   String _token = '';
+  String _jenkinsUser = '';
+  String _jenkinsToken = '';
   bool _tokenSaved = false;
   List<String> _savedUsers = [];
   late GitHubBackend _backend;
@@ -77,15 +79,21 @@ class _AdminShellState extends State<AdminShell> {
 
   Future<void> _load() async {
     final token = await StorageService.getToken();
+    final jenkinsUser = await StorageService.getJenkinsUser();
+    final jenkinsToken = await StorageService.getJenkinsToken();
     final users = await StorageService.getUsers();
     setState(() {
       if (token != null && token.isNotEmpty) { _token = token; _tokenSaved = true; }
+      if (jenkinsUser != null) _jenkinsUser = jenkinsUser;
+      if (jenkinsToken != null) _jenkinsToken = jenkinsToken;
       _savedUsers = users;
     });
   }
 
-  Future<void> _saveToken() async {
+  Future<void> _saveCredentials() async {
     await StorageService.setToken(_token);
+    await StorageService.setJenkinsUser(_jenkinsUser);
+    await StorageService.setJenkinsToken(_jenkinsToken);
     setState(() => _tokenSaved = true);
   }
 
@@ -113,9 +121,24 @@ class _AdminShellState extends State<AdminShell> {
   Widget _buildPage() {
     switch (_page) {
       case NavPage.settings:
-        return SettingsPage(token: _token, tokenSaved: _tokenSaved, onTokenChanged: (v) => setState(() => _token = v), onSave: _saveToken);
+        return SettingsPage(
+          token: _token,
+          jenkinsUser: _jenkinsUser,
+          jenkinsToken: _jenkinsToken,
+          tokenSaved: _tokenSaved,
+          onTokenChanged: (v) => setState(() => _token = v),
+          onJenkinsUserChanged: (v) => setState(() => _jenkinsUser = v),
+          onJenkinsTokenChanged: (v) => setState(() => _jenkinsToken = v),
+          onSaveAll: _saveCredentials,
+        );
       case NavPage.create:
-        return CreateRepoPage(token: _token, savedUsers: _savedUsers, backend: _backend);
+        return CreateRepoPage(
+          token: _token,
+          jenkinsUser: _jenkinsUser,
+          jenkinsToken: _jenkinsToken,
+          savedUsers: _savedUsers,
+          backend: _backend,
+        );
       case NavPage.manage:
         return ManageUsersPage(token: _token, savedUsers: _savedUsers, backend: _backend);
       case NavPage.remove:

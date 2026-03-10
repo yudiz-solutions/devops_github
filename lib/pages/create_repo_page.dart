@@ -6,10 +6,19 @@ import '../platform/github_backend.dart';
 
 class CreateRepoPage extends StatefulWidget {
   final String token;
+  final String jenkinsUser;
+  final String jenkinsToken;
   final List<String> savedUsers;
   final GitHubBackend backend;
 
-  const CreateRepoPage({super.key, required this.token, required this.savedUsers, required this.backend});
+  const CreateRepoPage({
+    super.key,
+    required this.token,
+    required this.jenkinsUser,
+    required this.jenkinsToken,
+    required this.savedUsers,
+    required this.backend,
+  });
 
   @override
   State<CreateRepoPage> createState() => _CreateRepoPageState();
@@ -20,8 +29,34 @@ class _CreateRepoPageState extends State<CreateRepoPage> with LoggerMixin {
   String _repoName = '';
   String _username = '';
   String _role = 'push';
+  bool _connectJenkins = false;
+  String _jenkinsFolder = '';
+  String _jenkinsItemName = '';
+  String _jenkinsBranch = '';
+  bool _loadingFolders = false;
+  List<String> _jenkinsFolders = [];
   bool _loading = false;
   String? _repoUrl;
+
+  Future<void> _fetchFolders() async {
+    if (widget.jenkinsUser.trim().isEmpty || widget.jenkinsToken.trim().isEmpty) {
+      log('Configure Jenkins username/token in Settings first', isWarn: true);
+      return;
+    }
+    setState(() => _loadingFolders = true);
+    final folders = await widget.backend.getJenkinsFolders(
+      username: widget.jenkinsUser,
+      token: widget.jenkinsToken,
+      onLog: log,
+    );
+    setState(() {
+      _jenkinsFolders = folders;
+      _loadingFolders = false;
+      if (_jenkinsFolder.isEmpty && folders.isNotEmpty) {
+        _jenkinsFolder = folders.first;
+      }
+    });
+  }
 
   Future<void> _execute() async {
     final owner = _owner.trim().isEmpty ? defaultOwner : _owner.trim();
@@ -36,6 +71,15 @@ class _CreateRepoPageState extends State<CreateRepoPage> with LoggerMixin {
       repoName: _repoName.trim(),
       collaborator: _username.trim().isEmpty ? null : _username.trim(),
       role: _role,
+      jenkins: _connectJenkins
+          ? JenkinsConfig(
+              username: widget.jenkinsUser,
+              token: widget.jenkinsToken,
+              folderName: _jenkinsFolder,
+              itemName: _jenkinsItemName,
+              branch: _jenkinsBranch.trim().isEmpty ? 'main' : _jenkinsBranch.trim(),
+            )
+          : null,
       onLog: log,
     );
 
@@ -83,9 +127,90 @@ class _CreateRepoPageState extends State<CreateRepoPage> with LoggerMixin {
             PrimaryButton(
               label: _loading ? 'Creating...' : 'Create Repository',
               icon: Icons.add_rounded,
-              onPressed: _repoName.trim().isNotEmpty && !_loading ? _execute : null,
+              onPressed: _repoName.trim().isNotEmpty && (!_connectJenkins || _jenkinsFolder.trim().isNotEmpty) && !_loading ? _execute : null,
               loading: _loading,
             ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Checkbox(
+                  value: _connectJenkins,
+                  onChanged: (v) => setState(() => _connectJenkins = v ?? false),
+                ),
+                const Text('Connect Jenkins pipeline', style: TextStyle(color: AppColors.textSecondary)),
+              ],
+            ),
+            if (_connectJenkins) ...[
+              const SizedBox(height: 10),
+              if (widget.jenkinsUser.trim().isEmpty || widget.jenkinsToken.trim().isEmpty)
+                const Text(
+                  'Jenkins username/token are missing. Please set them in Settings.',
+                  style: TextStyle(color: AppColors.danger, fontSize: 12),
+                ),
+              Row(children: [
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const FieldLabel('Jenkins Folder Name', required: true),
+                    if (_jenkinsFolders.isNotEmpty)
+                      Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.inputBg,
+                          border: Border.all(color: AppColors.inputBorder),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _jenkinsFolder.isEmpty ? _jenkinsFolders.first : _jenkinsFolder,
+                            dropdownColor: const Color(0xFF1E2A42),
+                            style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                            isExpanded: true,
+                            items: _jenkinsFolders
+                                .map((f) => DropdownMenuItem(value: f, child: Text(f)))
+                                .toList(),
+                            onChanged: (v) => setState(() => _jenkinsFolder = v ?? ''),
+                          ),
+                        ),
+                      )
+                    else
+                      StyledInput(
+                        placeholder: 'team-folder',
+                        onChanged: (v) => setState(() => _jenkinsFolder = v),
+                      ),
+                  ]),
+                ),
+                const SizedBox(width: 12),
+                PrimaryButton(
+                  label: _loadingFolders ? 'Loading...' : 'Fetch Folders',
+                  compact: true,
+                  icon: Icons.refresh_rounded,
+                  onPressed: _loadingFolders ? null : _fetchFolders,
+                ),
+              ]),
+              const SizedBox(height: 12),
+              Row(children: [
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const FieldLabel('Jenkins Item Name (optional)'),
+                    StyledInput(
+                      placeholder: 'Defaults to repo name',
+                      onChanged: (v) => setState(() => _jenkinsItemName = v),
+                    ),
+                  ]),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const FieldLabel('Branch Name (optional)'),
+                    StyledInput(
+                      placeholder: 'main',
+                      onChanged: (v) => setState(() => _jenkinsBranch = v),
+                    ),
+                  ]),
+                ),
+              ]),
+            ],
           ])),
 
           if (_repoUrl != null) StyledCard(

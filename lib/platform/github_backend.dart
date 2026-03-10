@@ -12,6 +12,22 @@ class GHResult {
   GHResult({required this.success, this.message = '', this.data = const {}});
 }
 
+class JenkinsConfig {
+  final String username;
+  final String token;
+  final String folderName;
+  final String? itemName;
+  final String branch;
+
+  JenkinsConfig({
+    required this.username,
+    required this.token,
+    required this.folderName,
+    this.itemName,
+    this.branch = 'main',
+  });
+}
+
 /// Collaborator model
 class Collaborator {
   final String login;
@@ -38,6 +54,13 @@ abstract class GitHubBackend {
     required String repoName,
     String? collaborator,
     String role = 'push',
+    JenkinsConfig? jenkins,
+    LogCallback? onLog,
+  });
+
+  Future<List<String>> getJenkinsFolders({
+    required String username,
+    required String token,
     LogCallback? onLog,
   });
 
